@@ -33,6 +33,28 @@ class GoturnNode:
             rospy.loginfo(errorMsg)
             sys.exit()
 
+    def track(self, img):
+        """
+        Tracking process, outputs the bounding box.
+        The initialization requires to launch the node (terminal)
+        in the derictory where the models are.
+        """
+        if self.init_flag == False:
+            # initialization.
+            bbox = (276, 23, 86, 320)
+            #bbox = cv2.selectROI(img, False)  # some issues, it freezes after.
+            flag = self.tracker.init(img, bbox)
+            if not(flag):
+                rospy.loginfo("Cannot initialize the tracker .... ")
+                sys.exit()
+            else:
+                rospy.loginfo("initialization successfull.")
+            self.init_flag = True
+        # tracking process.
+        else:
+            rospy.loginfo("Goturn processing at time %s.", rospy.get_time())
+            # TODO
+
 ################################################################################################
 
 def callback(msg):
@@ -40,7 +62,7 @@ def callback(msg):
         img_cv2 = convertion(msg)
         #display(img_cv2)
         # goturn processing
-        goturn(img_cv2)
+        node.track(img_cv2)
     except Exception as err:
         rospy.loginfo(err)
 
