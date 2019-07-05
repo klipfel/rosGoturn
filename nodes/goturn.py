@@ -14,6 +14,27 @@ import cv2, sys, os
 # message
 from sensor_msgs.msg import Image
 
+################################################################################################
+
+class GoturnNode:
+
+    def __init__(self):
+        self.tracker = cv2.TrackerGOTURN_create()
+        self.init_flag = False  # False, the tracker was not initialized.
+        self.check_model()
+
+    def check_model(self):
+        # root dir.
+        ROOT_DIR = os.path.dirname(os.path.abspath(__file__)) # since isfile depends on the terminal
+        # location.
+        rospy.loginfo("Root directory : %s", ROOT_DIR)
+        if not (os.path.isfile(ROOT_DIR + '/goturn.caffemodel') and os.path.isfile(ROOT_DIR + '/goturn.prototxt')):
+            errorMsg = " Could not find GOTURN model in current directory.\n Please ensure goturn.caffemodel and goturn.prototxt are in the current directory"
+            rospy.loginfo(errorMsg)
+            sys.exit()
+
+################################################################################################
+
 def callback(msg):
     try:
         img_cv2 = convertion(msg)
@@ -42,9 +63,9 @@ def display(img):
     cv2.waitKey(1)  # waits.
 
 def goturn(img):
-    rospy.loginfo("Goturn processing.")
-    tracker = cv2.TrackerGOTURN_create()
-    rospy.loginfo(tracker)
+    rospy.loginfo("Goturn processing at time %s.", rospy.get_time())
+
+################################################################################################
 
 def main():
     # Node initialization.
@@ -52,6 +73,9 @@ def main():
     rospy.loginfo("Subscriber starts.")
     # Subscriptions.
     sub = rospy.Subscriber("initial_image",Image,callback)
+    # tracker initialization.
+    global node  # makes the node structure available for each method.
+    node = GoturnNode()
     # Process.
     rospy.spin() # calls the callback each time a message is received.
     # Destroyes all windows after the end of the node.
