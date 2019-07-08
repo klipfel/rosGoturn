@@ -5,6 +5,10 @@ Node that reads the image published by a camera
 converts it to an openCV format and
 processes it.
 
+/!\ Launch this node with a terminal open in the folder
+where this file is located. (The implementation of
+Goturn needs it)
+
 """
 # ROS libraries
 import rospy
@@ -30,7 +34,12 @@ class GoturnNode:
         rospy.loginfo("Root directory : %s", ROOT_DIR)
         if not (os.path.isfile(ROOT_DIR + '/goturn.caffemodel') and os.path.isfile(ROOT_DIR + '/goturn.prototxt')):
             errorMsg = " Could not find GOTURN model in current directory.\n Please ensure goturn.caffemodel and goturn.prototxt are in the current directory"
-            rospy.loginfo(errorMsg)
+            rospy.logfatal(errorMsg)
+            sys.exit()
+        # Checks if the terminal launching the tracker is launched in the folder where
+        # the models are located.
+        if not (os.path.isfile('goturn.caffemodel') and os.path.isfile('goturn.prototxt')):
+            rospy.logfatal(" The terminal has to be launched where the models are located.")
             sys.exit()
 
     def track(self, img):
@@ -45,12 +54,12 @@ class GoturnNode:
             #bbox = cv2.selectROI(img, False)  # some issues, it freezes after.
             flag = self.tracker.init(img, bbox)
             if not(flag):
-                rospy.loginfo("Cannot initialize the tracker .... ")
+                rospy.logfatal("Cannot initialize the tracker .... ")
                 sys.exit()
             else:
-                rospy.loginfo("initialization successfull.")
-            self.init_flag = True
-        # tracking process.
+                rospy.loginfo("initialization SUCCESS.")
+            self.init_flag = True  # initialization done.
+        # tracking process : initialization already done.
         else:
             rospy.loginfo("Goturn processing at time %s.", rospy.get_time())
             # TODO
@@ -58,6 +67,9 @@ class GoturnNode:
 ################################################################################################
 
 def callback(msg):
+    """
+    Called each time a new frame is published by another thread.
+    """
     try:
         img_cv2 = convertion(msg)
         #display(img_cv2)
@@ -83,9 +95,6 @@ def convertion(msg):
 def display(img):
     cv2.imshow("Recovered image", img)
     cv2.waitKey(1)  # waits.
-
-def goturn(img):
-    rospy.loginfo("Goturn processing at time %s.", rospy.get_time())
 
 ################################################################################################
 
