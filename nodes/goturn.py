@@ -15,8 +15,10 @@ import rospy
 from cv_bridge import CvBridge
 # Other libraries
 import cv2, sys, os
+OPENCV_VERSION = cv2.__version__
 # message
 from sensor_msgs.msg import Image
+import threading
 
 ################################################################################################
 
@@ -48,10 +50,11 @@ class GoturnNode:
         The initialization requires to launch the node (terminal)
         in the derictory where the models are.
         """
+        #rospy.loginfo("FRAME NUMBER %s", self.identifier)
         if self.init_flag == False:
             # initialization.
-            bbox = (276, 23, 86, 320)
-            #bbox = cv2.selectROI(img, False)  # some issues, it freezes after.
+            #bbox = (276, 23, 86, 320)
+            bbox = cv2.selectROI(img, False)  # some issues, it freezes after.
             flag = self.tracker.init(img, bbox)
             if not(flag):
                 rospy.logfatal("Cannot initialize the tracker .... ")
@@ -71,6 +74,7 @@ def callback(msg):
     Called each time a new frame is published by another thread.
     """
     try:
+        # convertion to opencv.
         img_cv2 = convertion(msg)
         #display(img_cv2)
         # goturn processing
@@ -84,7 +88,7 @@ def convertion(msg):
     """
     # Image processing.
     encoding = msg.encoding
-    rospy.loginfo("Image processed at time %s, with encoding type %s.", rospy.get_time(), encoding)
+    rospy.loginfo("NEW CALLBACK : Image processed at time %s, with encoding type %s.", rospy.get_time(), encoding)
     # convert sensor_msgs/Image to OpenCV Image
     bdg = CvBridge()
     # convertion of the image into openCV format.
@@ -96,6 +100,10 @@ def display(img):
     cv2.imshow("Recovered image", img)
     cv2.waitKey(1)  # waits.
 
+def check_dependencies():
+    # TODO : forcing the opencv version.
+    pass
+
 ################################################################################################
 
 def main():
@@ -103,7 +111,9 @@ def main():
     rospy.init_node('goturn', log_level=rospy.DEBUG, anonymous = True)
     rospy.loginfo("Subscriber starts.")
     # Subscriptions.
-    sub = rospy.Subscriber("initial_image",Image,callback)
+    buffer_size = 2**30 # maximum possible buffer size
+    rospy.loginfo("Subscriber's buffer sizer : %s", buffer_size)
+    sub = rospy.Subscriber("initial_image",Image,callback, queue_size = 1, buff_size = buffer_size)
     # tracker initialization.
     global node  # makes the node structure available for each method.
     node = GoturnNode()

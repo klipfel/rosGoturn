@@ -47,7 +47,7 @@ def start_node(image_name):
     img_msg = bdg.cv2_to_imgmsg(img, out_format)
     #rospy.loginfo(img_msg)  # displays the message
     # publishing loop the image.
-    rate = rospy.Rate(1) # 10hz
+    rate = rospy.Rate(30) # hz
     while not rospy.is_shutdown():
         str = "publishing at %s" % rospy.get_time()
         rospy.loginfo(str)
