@@ -65,7 +65,18 @@ class GoturnNode:
         # tracking process : initialization already done.
         else:
             rospy.loginfo("Goturn processing at time %s.", rospy.get_time())
-            # TODO
+            # Application of teh goturn algorithm.
+            flag, bbox = self.tracker.update(img)
+            if flag: # success.
+                rospy.loginfo("New bounding box : %s", bbox)
+                p1 = (int(bbox[0]), int(bbox[1]))
+                p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
+                cv2.rectangle(img, p1, p2, (255, 0, 0), 2, 1)
+                cv2.imshow("Tracking", img)
+                cv2.waitKey(1)
+            else:
+                rospy.logwarn("FAILURE IN THE TRACKING .... ")
+
 
     def process(self,msg):
         # conversion to opencv.
