@@ -68,31 +68,22 @@ class GoturnNode:
             # TODO
 
     def process(self,msg):
-        # convertion to opencv.
-        img_cv2 = convertion(msg)
+        # conversion to opencv.
+        img_cv2 = conversion(msg)
         #display(img_cv2)
         # goturn processing
         self.track(img_cv2)
 
 ################################################################################################
 
-def callback(msg):
-    """
-    Called each time a new frame is published by another thread.
-    """
-    try:
-        # processing the camera ros message.
-        node.process(msg)
-    except Exception as err:
-        rospy.loginfo(err)
-
-def convertion(msg):
+def conversion(msg):
     """
     Convertion to OpenCV standards.
     """
+    rospy.loginfo("Conversion at %s.. ", rospy.get_time())
     # Image processing.
     encoding = msg.encoding
-    rospy.loginfo("NEW CALLBACK : Image processed at time %s, with encoding type %s.", rospy.get_time(), encoding)
+    #rospy.loginfo("NEW CALLBACK : Image processed at time %s, with encoding type %s.", rospy.get_time(), encoding)
     # convert sensor_msgs/Image to OpenCV Image
     bdg = CvBridge()
     # convertion of the image into openCV format.
@@ -115,16 +106,18 @@ def main():
     rospy.init_node('goturn', log_level=rospy.DEBUG, anonymous = True)
     rospy.loginfo("Subscriber starts.")
     # Subscriptions.
-    buffer_size = 2**30 # maximum possible buffer size
-    rospy.loginfo("Subscriber's buffer sizer : %s", buffer_size)
-    sub = rospy.Subscriber("initial_image",Image,callback, queue_size = 1, buff_size = buffer_size)
+    #buffer_size = 2**30 # maximum possible buffer size
+    #rospy.loginfo("Subscriber's buffer sizer : %s", buffer_size)
+    #sub = rospy.Subscriber("initial_image",Image,callback, queue_size = 1, buff_size = buffer_size)
     # tracker initialization.
     global node  # makes the node structure available for each method.
     node = GoturnNode()
-    # Process.
-    rospy.spin() # calls the callback each time a message is received.
-    # Destroyes all windows after the end of the node.
-    cv2.destroyAllWindows()
+    # spinning loop for the frame.
+    while not rospy.is_shutdown():
+        msg = rospy.wait_for_message("initial_image",Image)  # gets a new message / frame.
+        rospy.loginfo("Frame timestamp :  %s.", msg.header.stamp)
+        rospy.loginfo("Frame processing starts at %s.", rospy.get_rostime())
+        node.process(msg)  # frame processing.
 
 if __name__ == "__main__":
     try:

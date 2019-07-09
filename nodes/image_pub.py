@@ -51,6 +51,8 @@ def start_node(image_name):
     while not rospy.is_shutdown():
         str = "publishing at %s" % rospy.get_time()
         rospy.loginfo(str)
+        img_msg.header.stamp = rospy.get_rostime() # timestamp actualization.
+        rospy.loginfo("timestamp : % s.", img_msg.header.stamp)
         pub_img.publish(img_msg)
         rate.sleep()
 
