@@ -67,6 +67,13 @@ class GoturnNode:
             rospy.loginfo("Goturn processing at time %s.", rospy.get_time())
             # TODO
 
+    def process(self,msg):
+        # convertion to opencv.
+        img_cv2 = convertion(msg)
+        #display(img_cv2)
+        # goturn processing
+        self.track(img_cv2)
+
 ################################################################################################
 
 def callback(msg):
@@ -74,11 +81,8 @@ def callback(msg):
     Called each time a new frame is published by another thread.
     """
     try:
-        # convertion to opencv.
-        img_cv2 = convertion(msg)
-        #display(img_cv2)
-        # goturn processing
-        node.track(img_cv2)
+        # processing the camera ros message.
+        node.process(msg)
     except Exception as err:
         rospy.loginfo(err)
 
