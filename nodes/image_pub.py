@@ -53,6 +53,12 @@ def start_node(image_name):
         rospy.loginfo(str)
         img_msg.header.stamp = rospy.get_rostime() # timestamp actualization.
         rospy.loginfo("timestamp : % s.", img_msg.header.stamp)
+        # image dimensions.
+        dim = img.shape
+        img_msg.height = dim[0]
+        img_msg.width = dim[1]
+        rospy.loginfo("Image size : w : %s x h : %s.", img_msg.width, img_msg.height)
+        # publishing.
         pub_img.publish(img_msg)
         rate.sleep()
 
