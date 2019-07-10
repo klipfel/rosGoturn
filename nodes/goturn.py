@@ -19,6 +19,7 @@ OPENCV_VERSION = cv2.__version__
 # message
 from sensor_msgs.msg import Image
 import threading
+from std_msgs.msg import Float64
 
 ################################################################################################
 
@@ -74,6 +75,14 @@ class GoturnNode:
                 cv2.rectangle(img, p1, p2, (255, 0, 0), 2, 1)
                 cv2.imshow("Tracking", img)
                 cv2.waitKey(1)
+                # Errors computation.
+                # bearing error.
+                width = img.shape[1]
+                bb_mid_x = bbox[0] + bbox[2]/2
+                img_mid_x = width/2
+                e_bearing = (img_mid_x - bb_mid_x)/width
+                # Publishing errors.
+                pub_err_bearing.publish(e_bearing)
             else:
                 rospy.logwarn("FAILURE IN THE TRACKING .... ")
 
@@ -116,6 +125,9 @@ def main():
     # Node initialization.
     rospy.init_node('goturn', log_level=rospy.DEBUG, anonymous = True)
     rospy.loginfo("Subscriber starts.")
+    # Publishing.
+    global pub_err_bearing
+    pub_err_bearing = rospy.Publisher("bearing_error", Float64, queue_size = 1)
     # Subscriptions.
     #buffer_size = 2**30 # maximum possible buffer size
     #rospy.loginfo("Subscriber's buffer sizer : %s", buffer_size)
