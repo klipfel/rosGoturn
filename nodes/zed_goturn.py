@@ -141,10 +141,14 @@ def main():
     node = GoturnNode()
     # spinning loop for the frame.
     while not rospy.is_shutdown():
+        t_start = rospy.get_rostime()
         msg = rospy.wait_for_message("/zed/zed_node/rgb/image_rect_color/compressed",CompressedImage)  # gets a new message / frame.
         rospy.loginfo("Frame timestamp :  %s.", msg.header.stamp)
         rospy.loginfo("Frame processing starts at %s.", rospy.get_rostime())
         node.process(msg)  # frame processing.
+        t_end = rospy.get_rostime()
+        FPS = 1/(t_end-t_start).to_sec()
+        rospy.loginfo("FPS : %s", FPS)
 
 if __name__ == "__main__":
     try:
