@@ -4,12 +4,12 @@ from std_msgs.msg import Float64
 
 # parameters of the servomotor control.
 # u is equivalent to an angle (bearing).
-u0 = 50  # straight.
-umin = 0
-umax = 100
+u0 = 50    # straight.
+umin = 0    # right
+umax = 100    # left
 
 # PID parameters
-Kp = 1
+Kp = 100
 
 def callback_bearing(msg):
     rospy.loginfo(rospy.get_caller_id() + "I heard %s at %s", msg.data, rospy.get_rostime())
