@@ -128,6 +128,9 @@ def main():
     # Publishing.
     global pub_err_bearing
     pub_err_bearing = rospy.Publisher("bearing_error", Float64, queue_size = 1)
+    # Initialization of the error to avoid any unexpected behavior of the 
+    # hardware.
+    pub_err_bearing.publish(0)
     # Subscriptions.
     #buffer_size = 2**30 # maximum possible buffer size
     #rospy.loginfo("Subscriber's buffer sizer : %s", buffer_size)
